@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d1b2a;
+      color: #e8f4fd;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+    }
+
+    body.small   { width: 440px;  height: 280px; }
+    body.large   { width: 920px;  height: 680px; }
+    body.marquee { width: 1400px; height: 560px; }
+    body.icon    { width: 128px;  height: 128px; background: transparent; }
+
+    .root {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      padding: 0 48px;
+      gap: 48px;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .icon-box {
+      width: 64px; height: 64px;
+      border: 2px solid #00c8ff;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 200, 255, 0.08);
+    }
+    .icon-box svg { width: 36px; height: 36px; }
+
+    h1 {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .tagline {
+      font-size: 15px;
+      color: #7ab8d8;
+      line-height: 1.45;
+      max-width: 280px;
+    }
+
+    .right {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .popup {
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      color: #222;
+      width: 320px;
+    }
+
+    .popup-inner { padding: 6px 7px 7px; }
+
+    .popup-label {
+      font-size: 11px;
+      color: #555;
+      margin-bottom: 3px;
+    }
+
+    .popup-input {
+      border: 1px solid #888;
+      border-radius: 3px;
+      padding: 4px 7px;
+      font-size: 13px;
+      font-family: inherit;
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 1px;
+      height: 1em;
+      background: #333;
+      margin-left: 1px;
+      vertical-align: text-bottom;
+    }
+
+    .popup-list { border-top: 1px solid #bbb; }
+
+    .tab-item {
+      padding: 4px 7px;
+      border-bottom: 1px solid #eee;
+      overflow: hidden;
+    }
+    .tab-item:last-child { border-bottom: none; }
+    .tab-item.active { background: #e8f0fe; }
+
+    .tab-title {
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-url {
+      font-size: 11px;
+      color: #777;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* small */
+    body.small .root  { padding: 0 28px; gap: 24px; }
+    body.small .left  { gap: 10px; }
+    body.small .icon-box { width: 46px; height: 46px; border-radius: 10px; }
+    body.small .icon-box svg { width: 26px; height: 26px; }
+    body.small h1     { font-size: 22px; }
+    body.small .tagline { font-size: 11px; max-width: 160px; }
+    body.small .popup { width: 190px; }
+    body.small .popup-label { font-size: 9px; }
+    body.small .popup-input { font-size: 10px; padding: 3px 5px; }
+    body.small .tab-item { padding: 3px 5px; }
+    body.small .tab-title { font-size: 9px; }
+    body.small .tab-url   { font-size: 8px; }
+
+    /* large */
+    body.large .root  { padding: 0 72px; gap: 72px; }
+    body.large .left  { gap: 20px; }
+    body.large .icon-box { width: 80px; height: 80px; border-radius: 18px; border-width: 2.5px; }
+    body.large .icon-box svg { width: 46px; height: 46px; }
+    body.large h1     { font-size: 54px; }
+    body.large .tagline { font-size: 18px; max-width: 340px; }
+    body.large .popup { width: 360px; }
+    body.large .popup-label { font-size: 12px; }
+    body.large .popup-input { font-size: 14px; padding: 5px 8px; }
+    body.large .tab-item { padding: 5px 8px; }
+    body.large .tab-title { font-size: 13px; }
+    body.large .tab-url   { font-size: 12px; }
+
+    /* marquee */
+    body.marquee .root   { padding: 0 96px; gap: 96px; }
+    body.marquee .left   { gap: 18px; }
+    body.marquee .icon-box { width: 72px; height: 72px; border-radius: 16px; }
+    body.marquee .icon-box svg { width: 40px; height: 40px; }
+    body.marquee h1      { font-size: 46px; }
+    body.marquee .tagline { font-size: 17px; max-width: 320px; }
+    body.marquee .popup  { width: 340px; }
+    body.marquee .popup-label { font-size: 12px; }
+    body.marquee .popup-input { font-size: 14px; padding: 5px 8px; }
+    body.marquee .tab-item { padding: 5px 8px; }
+    body.marquee .tab-title { font-size: 13px; }
+    body.marquee .tab-url   { font-size: 12px; }
+
+    /* icon */
+    body.icon .root { justify-content: center; padding: 0; gap: 0; }
+    body.icon .text-group,
+    body.icon .right { display: none; }
+    body.icon .icon-box {
+      width: 128px; height: 128px;
+      border-radius: 24px;
+      border-width: 3px;
+    }
+    body.icon .icon-box svg { width: 72px; height: 72px; }
+  </style>
+</head>
+<body>
+<div class="root">
+  <div class="left">
+    <div class="icon-box">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M14 2L5 14h7l-2 8 10-12h-7l2-8z" fill="#00c8ff"/>
+      </svg>
+    </div>
+    <div class="text-group">
+      <h1>Tabatus</h1>
+      <p class="tagline">Switch tabs instantly from the keyboard.</p>
+    </div>
+  </div>
+  <div class="right">
+    <div class="popup">
+      <div class="popup-inner">
+        <div class="popup-label">Activate Tab</div>
+        <div class="popup-input">git<span class="cursor"></span></div>
+      </div>
+      <div class="popup-list">
+        <div class="tab-item active">
+          <div class="tab-title">GitHub · jokokko/tabatus</div>
+          <div class="tab-url">github.com/jokokko/tabatus</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-title">Stack Overflow</div>
+          <div class="tab-url">stackoverflow.com/questions</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-title">[Open empty tab]</div>
+          <div class="tab-url">about:blank</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const size = new URLSearchParams(location.search).get('size') || 'large';
+  document.body.classList.add(size);
+</script>
+</body>
+</html>

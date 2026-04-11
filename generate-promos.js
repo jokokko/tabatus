@@ -1,6 +1,7 @@
 'use strict';
 
 const puppeteer = require('puppeteer');
+const sharp     = require('sharp');
 const path      = require('path');
 const fs        = require('fs');
 
@@ -28,13 +29,19 @@ async function main() {
   try {
     for (const { name, width, height, url } of promos) {
       const page = await browser.newPage();
-      await page.setViewport({ width, height, deviceScaleFactor: 2 });
+      await page.setViewport({ width, height, deviceScaleFactor: 1 });
       await page.goto(url, { waitUntil: 'networkidle0' });
 
-      const outPath = path.join(MISC, `${name}.png`);
-      await page.screenshot({ path: outPath, clip: { x: 0, y: 0, width, height } });
-      console.log(`✓ misc/${name}.png`);
+      const buffer = await page.screenshot({ clip: { x: 0, y: 0, width, height } });
 
+      // Flatten alpha channel → 24-bit RGB PNG (required by Chrome Web Store)
+      const outPath = path.join(MISC, `${name}.png`);
+      await sharp(buffer)
+        .flatten({ background: { r: 255, g: 255, b: 255 } })
+        .png()
+        .toFile(outPath);
+
+      console.log(`✓ misc/${name}.png  (${width}×${height})`);
       await page.close();
     }
   } finally {

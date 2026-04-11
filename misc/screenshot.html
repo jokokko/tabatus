@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1280px;
+      height: 800px;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+    }
+
+    /* ── Browser chrome ──────────────────────────────────────────────────────── */
+    .browser-bar {
+      height: 42px;
+      background: #21262d;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 4px;
+      color: #8b949e;
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      font-size: 14px;
+    }
+
+    .url-bar {
+      flex: 1;
+      height: 28px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+      font-size: 13px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .lock-icon { color: #3fb950; font-size: 11px; flex-shrink: 0; }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .ext-icon {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 4px;
+      font-size: 16px;
+      background: rgba(0, 200, 255, 0.15);
+      border: 1px solid rgba(0, 200, 255, 0.4);
+    }
+
+    /* ── Page ────────────────────────────────────────────────────────────────── */
+    .page {
+      height: 758px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gh-header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 0 32px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .gh-logo { font-size: 22px; font-weight: 700; letter-spacing: -1px; flex-shrink: 0; }
+
+    .gh-search {
+      width: 260px; height: 28px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      display: flex; align-items: center;
+      padding: 0 10px; gap: 6px;
+      color: #8b949e; font-size: 12px;
+    }
+
+    .gh-nav { display: flex; gap: 2px; margin-left: 8px; }
+    .gh-nav-item { padding: 4px 10px; font-size: 13px; color: #e6edf3; border-radius: 6px; }
+
+    .repo-layout { display: flex; padding: 24px 32px; gap: 24px; }
+    .repo-main { flex: 1; min-width: 0; }
+
+    .repo-crumb { font-size: 20px; margin-bottom: 12px; }
+    .repo-crumb .owner { color: #58a6ff; }
+    .repo-crumb .slash { color: #8b949e; margin: 0 4px; }
+    .repo-crumb .name  { color: #58a6ff; font-weight: 600; }
+
+    .repo-tabs {
+      display: flex;
+      border-bottom: 1px solid #30363d;
+      margin-bottom: 16px;
+    }
+    .repo-tab {
+      padding: 8px 16px; font-size: 13px; color: #8b949e;
+      border-bottom: 2px solid transparent;
+    }
+    .repo-tab.active { color: #e6edf3; border-bottom-color: #f78166; }
+    .repo-tab .badge {
+      background: #30363d; color: #e6edf3;
+      border-radius: 20px; padding: 1px 6px; font-size: 11px; margin-left: 4px;
+    }
+
+    .repo-desc { font-size: 14px; color: #8b949e; margin-bottom: 8px; }
+    .repo-meta { display: flex; gap: 16px; font-size: 12px; color: #8b949e; margin-bottom: 16px; }
+
+    .file-tree { border: 1px solid #30363d; border-radius: 6px; overflow: hidden; }
+
+    .file-tree-header {
+      background: #161b22; padding: 8px 16px;
+      border-bottom: 1px solid #30363d;
+      display: flex; align-items: center; gap: 8px; font-size: 13px;
+    }
+    .commit-author { font-weight: 600; color: #e6edf3; }
+    .commit-msg    { color: #8b949e; flex: 1; }
+    .commit-date   { color: #8b949e; font-size: 12px; }
+
+    .file-row {
+      display: flex; align-items: center;
+      padding: 6px 16px; border-bottom: 1px solid #21262d;
+      font-size: 13px; gap: 8px;
+    }
+    .file-row:last-child { border-bottom: none; }
+    .file-icon { color: #8b949e; font-size: 14px; width: 16px; flex-shrink: 0; }
+    .file-name { color: #58a6ff; flex: 1; }
+    .file-note { color: #8b949e; font-size: 12px; flex: 2; }
+    .file-age  { color: #8b949e; font-size: 12px; text-align: right; }
+
+    .repo-sidebar { width: 280px; flex-shrink: 0; }
+    .sidebar-section { margin-bottom: 20px; }
+    .sidebar-title {
+      font-size: 13px; font-weight: 600; color: #e6edf3;
+      margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #21262d;
+    }
+    .sidebar-body { font-size: 12px; color: #8b949e; line-height: 1.5; }
+    .sidebar-tag {
+      display: inline-block; background: #1f3a5f; color: #58a6ff;
+      border-radius: 20px; padding: 2px 10px; font-size: 11px; margin: 2px 2px 2px 0;
+    }
+    .sidebar-stat { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 12px; color: #8b949e; }
+
+    /* ── Tabatus popup ───────────────────────────────────────────────────────── */
+    .popup-wrap {
+      position: absolute;
+      top: 0;
+      right: 48px;
+    }
+
+    .popup {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+      width: 360px;
+      color: #222;
+    }
+
+    .popup-inner { padding: 6px 7px 7px; }
+    .popup-label { font-size: 11px; color: #555; margin-bottom: 3px; }
+    .popup-input {
+      border: 1px solid #888; border-radius: 3px;
+      padding: 5px 8px; font-size: 13px; font-family: inherit;
+      width: 100%; display: flex; align-items: center;
+    }
+    .cursor {
+      display: inline-block; width: 1px; height: 1em;
+      background: #333; margin-left: 1px; vertical-align: text-bottom;
+    }
+
+    .popup-list { border-top: 1px solid #bbb; }
+
+    .tab-item { padding: 5px 8px; border-bottom: 1px solid #eee; overflow: hidden; }
+    .tab-item:last-child { border-bottom: none; }
+    .tab-item.active { background: #e8f0fe; }
+
+    .tab-title { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab-url   { display: block; font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab-item.active .tab-url { color: #555; }
+  </style>
+</head>
+<body>
+
+<div class="browser-bar">
+  <div class="nav-btns">
+    <div class="nav-btn">←</div>
+    <div class="nav-btn">→</div>
+  </div>
+  <div class="url-bar">
+    <span class="lock-icon">🔒</span>
+    <span>github.com/jokokko/tabatus</span>
+  </div>
+  <div class="toolbar-right">
+    <div class="ext-icon">⚡</div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="gh-header">
+    <div class="gh-logo">GitHub</div>
+    <div class="gh-search">🔍 &nbsp;Search or jump to…</div>
+    <div class="gh-nav">
+      <div class="gh-nav-item">Pull requests</div>
+      <div class="gh-nav-item">Issues</div>
+      <div class="gh-nav-item">Explore</div>
+    </div>
+  </div>
+
+  <div class="repo-layout">
+    <div class="repo-main">
+      <div class="repo-crumb">
+        <span class="owner">jokokko</span>
+        <span class="slash">/</span>
+        <span class="name">tabatus</span>
+      </div>
+      <div class="repo-tabs">
+        <div class="repo-tab active">⌂ Code</div>
+        <div class="repo-tab">⊙ Issues <span class="badge">2</span></div>
+        <div class="repo-tab">⊕ Pull requests</div>
+        <div class="repo-tab">▷ Actions</div>
+      </div>
+      <div class="repo-desc">Quickly search &amp; switch tabs by keyboard. Browser extension for Firefox and Chrome.</div>
+      <div class="repo-meta">
+        <span>⭐ MIT</span>
+        <span>🌐 JavaScript</span>
+      </div>
+      <div class="file-tree">
+        <div class="file-tree-header">
+          <span class="commit-author">jokokko</span>
+          <span class="commit-msg">Migrate to Manifest V3, replace AngularJS with native JS</span>
+          <span class="commit-date">2 hours ago</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon">📁</span><span class="file-name">src</span>
+          <span class="file-note">Source files</span><span class="file-age">2 hours ago</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon">📁</span><span class="file-name">misc</span>
+          <span class="file-note">Store assets</span><span class="file-age">2 hours ago</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon">📄</span><span class="file-name">build.js</span>
+          <span class="file-note">Build script for Firefox and Chrome</span><span class="file-age">2 hours ago</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon">📄</span><span class="file-name">package.json</span>
+          <span class="file-note"></span><span class="file-age">2 hours ago</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon">📄</span><span class="file-name">PRIVACY.md</span>
+          <span class="file-note">Privacy policy</span><span class="file-age">2 hours ago</span>
+        </div>
+        <div class="file-row">
+          <span class="file-icon">📄</span><span class="file-name">README.md</span>
+          <span class="file-note">Browser extension for quickly searching and switching tabs</span><span class="file-age">2 hours ago</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="repo-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">About</div>
+        <div class="sidebar-body">Quickly search &amp; switch tabs by keyboard.</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Topics</div>
+        <div class="sidebar-body">
+          <span class="sidebar-tag">browser-extension</span>
+          <span class="sidebar-tag">firefox</span>
+          <span class="sidebar-tag">chrome</span>
+          <span class="sidebar-tag">manifest-v3</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Releases</div>
+        <div class="sidebar-stat">🏷 v2.0.0 · Latest</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="popup-wrap">
+    <div class="popup">
+      <div class="popup-inner">
+        <div class="popup-label">Activate Tab</div>
+        <div class="popup-input">git<span class="cursor"></span></div>
+      </div>
+      <div class="popup-list">
+        <div class="tab-item active">
+          <span class="tab-title">GitHub · jokokko/tabatus</span>
+          <span class="tab-url">github.com/jokokko/tabatus</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-title">Stack Overflow</span>
+          <span class="tab-url">stackoverflow.com/questions</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-title">git - the simple guide</span>
+          <span class="tab-url">rogerdudler.github.io/git-guide</span>
+        </div>
+        <div class="tab-item">
+          <span class="tab-title">[Open empty tab]</span>
+          <span class="tab-url">about:blank</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
