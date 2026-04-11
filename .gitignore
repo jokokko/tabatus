@@ -1,1 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# IDE
 .idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tooling
+.claude/
+
+# Logs
+*.log

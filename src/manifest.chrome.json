@@ -14,7 +14,7 @@
     "browser_style": false
   },
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "permissions": [
     "tabs",
@@ -35,10 +35,5 @@
       }
     }
   },
-  "version": "2.0.0",
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "@tabatus"
-    }
-  }
+  "version": "2.0.0"
 }

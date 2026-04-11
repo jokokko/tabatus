@@ -1,112 +1,114 @@
 'use strict';
 
-(function () {
-    let app = angular.module("tabsapp", ["mgcrea.ngStrap"]);
+(async () => {
+    const fuseOptions = {
+        shouldSort: true,
+        tokenize: true,
+        threshold: 0.6,
+        location: 0,
+        distance: 100,
+        maxPatternLength: 32,
+        minMatchCharLength: 1,
+        keys: ['title', 'url'],
+    };
 
-    app.factory("port", [PortFactory]);
-    app.factory("focus", ["$timeout", "$window", FocusFactory]);
-    app.filter("byTitleAndUrl", [FilterFactory]);
-    app.controller("tabsctrl", ["$scope", "port", "focus", TabsCtrl]);
+    let port = null;
+    let allTabs = [];
+    let filteredTabs = [];
+    let activeIndex = -1;
 
-    function PortFactory() {
-        if (typeof(browser) !== 'undefined') {
-            return browser.runtime.connect({name: contracts.Port});
+    const input = document.getElementById('searchinput');
+    const list = document.getElementById('tablist');
+
+    try {
+        port = browser.runtime.connect({ name: contracts.Port });
+        port.onMessage.addListener(handleMessage);
+    } catch (e) {
+        console.error('Port connection failed:', e);
+    }
+
+    port.postMessage({ command: contracts.CollectTabs });
+    input.focus();
+
+    async function filterTabs(query) {
+        if (!query) return allTabs;
+
+        const settings = await browser.storage.sync.get(contracts.OptionDisableFuzzyMatching);
+        if (settings && settings[contracts.OptionDisableFuzzyMatching]) {
+            const q = query.toLowerCase();
+            return allTabs.filter(t =>
+                t.title.toLowerCase().includes(q) || t.url.toLowerCase().includes(q)
+            );
         }
-        return {
-            postMessage: function () {
-            },
-            onMessage: function () {
-            }
+
+        return new Fuse(allTabs, fuseOptions).search(query);
+    }
+
+    function renderList(tabs) {
+        list.innerHTML = '';
+        filteredTabs = tabs;
+        activeIndex = tabs.length > 0 ? 0 : -1;
+
+        tabs.forEach((tab, i) => {
+            const li = document.createElement('li');
+            if (i === 0) li.classList.add('active');
+
+            const title = document.createElement('span');
+            title.className = 'tab-title';
+            title.textContent = tab.title;
+
+            const url = document.createElement('span');
+            url.className = 'tab-url';
+            url.textContent = tab.url;
+
+            li.appendChild(title);
+            li.appendChild(url);
+            li.addEventListener('click', () => activateTab(tab));
+            list.appendChild(li);
+        });
+    }
+
+    function setActive(index) {
+        const items = list.querySelectorAll('li');
+        if (activeIndex >= 0 && activeIndex < items.length) {
+            items[activeIndex].classList.remove('active');
+        }
+        activeIndex = index;
+        if (activeIndex >= 0 && activeIndex < items.length) {
+            items[activeIndex].classList.add('active');
+            items[activeIndex].scrollIntoView({ block: 'nearest' });
         }
     }
 
-    function FilterFactory() {
-
-        const options = {
-            shouldSort: true,
-            tokenize: true,
-            threshold: 0.6,
-            location: 0,
-            distance: 100,
-            maxPatternLength: 32,
-            minMatchCharLength: 1,
-            keys: [
-                "title",
-                "url"
-            ]
-        };
-
-        return async function (items, filterValue) {
-            if (typeof filterValue !== "string") {
-                return items;
-            }
-
-            let filterValueLowerCased = filterValue.toLowerCase();
-
-            let noFuzzyMatch = await browser.storage.sync.get(contracts.OptionDisableFuzzyMatching);
-
-            if (noFuzzyMatch && noFuzzyMatch[contracts.OptionDisableFuzzyMatching]) {
-
-                return items.filter(item => {
-                    return item.title.toLowerCase().indexOf(filterValueLowerCased) > -1 ||
-                        item.url.toLowerCase().indexOf(filterValueLowerCased) > -1;
-                });
-            }
-
-            let fuse = new Fuse(items, options);
-            return fuse.search(filterValueLowerCased);
-        };
+    function activateTab(tab) {
+        port?.postMessage({ command: contracts.ActivateTab, payload: tab });
     }
 
-    function FocusFactory($timeout, $window) {
-        return function (id) {
-            $timeout(function () {
-                let element = $window.document.getElementById(id);
-                if (element) {
-                    element.focus();
-                }
-            });
-        };
-    }
-
-    function TabsCtrl($scope, port, focus) {
-
-        let ctx = this;
-        let handlers = {};
-
-        ctx.tabs = [];
-        ctx.$scope = $scope;
-        ctx.port = port;
-        ctx.focus = focus;
-        ctx.activateTab = ctx.activateTab.bind(this);
-
-        handlers[contracts.CollectTabsCompleted] = ctx.onTabs.bind(this);
-        handlers[contracts.ActivateTabCompleted] = () => {
+    function handleMessage(e) {
+        if (e.event === contracts.CollectTabsCompleted) {
+            allTabs = e.payload;
+            renderList(allTabs);
+        } else if (e.event === contracts.ActivateTabCompleted) {
             window.close();
-        };
-
-        port.onMessage.addListener(e => {
-            let handler = handlers[e.event];
-            if (handler) {
-                handler(e, port);
-            }
-        });
-
-        ctx.$onInit = function () {
-            ctx.port.postMessage({command: contracts.CollectTabs});
-            ctx.focus("searchinput");
-        };
+        }
     }
 
-    TabsCtrl.prototype.activateTab = function (tabToActivate) {
-        let ctx = this;
-        ctx.port.postMessage({command: contracts.ActivateTab, payload: tabToActivate});
-    };
+    input.addEventListener('input', async (e) => {
+        renderList(await filterTabs(e.target.value));
+    });
 
-    TabsCtrl.prototype.onTabs = function (collectTabsCompleted) {
-        let ctx = this;
-        ctx.$scope.$apply(function () {
-            ctx.tabs = collectTabsCompleted.payload;
-        });
-    };
-})(window);
+    input.addEventListener('keydown', (e) => {
+        const items = list.querySelectorAll('li');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActive(Math.min(activeIndex + 1, items.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActive(Math.max(activeIndex - 1, 0));
+        } else if (e.key === 'Enter') {
+            if (activeIndex >= 0 && filteredTabs[activeIndex]) {
+                activateTab(filteredTabs[activeIndex]);
+            }
+        }
+    });
+})();

@@ -1,83 +1,57 @@
 'use strict';
 
-let root = {};
+const browser = globalThis.browser ?? globalThis.chrome;
 
-(function (ctx) {
+const contracts = {
+    Port: 'PortTabatus',
+    CollectTabs: 'CollectTabs',
+    CollectTabsCompleted: 'CollectTabsCompleted',
+    ActivateTab: 'ActivateTab',
+    ActivateTabCompleted: 'ActivateTabCompleted',
+    ActivateTabFailed: 'ActivateTabFailed',
+    OptionDisableFuzzyMatching: 'optionDisableFuzzyMatching',
+};
 
-    let tabs = browser.tabs;
+const pseudoTabs = [{
+    id: '[Open empty tab]',
+    title: '[Open empty tab]',
+    url: 'about:blank',
+    pseudoTab: true,
+}];
 
-    ctx.addon = function () {
+const pseudoTabActions = {
+    '[Open empty tab]': async () => { browser.tabs.create({ url: 'about:blank' }); },
+};
 
-        let pseudoTabActions = {};
-        let pseudoTabs = [{
-            id: "[Open empty tab]",
-            title: "[Open empty tab]",
-            url: "about:blank",
-            pseudoTab: true,
-        }];
+async function collectTabs() {
+    const items = await browser.tabs.query({});
+    return items.map(item => ({ id: item.id, title: item.title, url: item.url })).concat(pseudoTabs);
+}
 
-        pseudoTabActions[pseudoTabs[0].id] = {
-            activate: async function () {
-                tabs.create({url: "about:blank"});
-            }
-        };
-
-        let collectTabs = async function () {
-            return tabs.query({}).then(items => {
-                return items.map(item => {
-                    return {id: item.id, title: item.title, url: item.url};
-                }).concat(pseudoTabs);
-            });
-        };
-
-        let activateTab = async function (tabToActivate) {
-            let pseudoTab = pseudoTabActions[tabToActivate.id];
-            if (pseudoTab)
-            {
-                return pseudoTab.activate().then(() => {return true;})
-            }
-            return tabs.update(tabToActivate.id,{
-                active: true
-            }).then(() => {
-                return true;
-            }).catch(() => {
-                return false;
-            });
-        };
-
-        return {
-            collectTabs: collectTabs,
-            activateTab: activateTab,
-        }
-    }();
-})(root);
-
-(function () {
-    let addon = root.addon;
-    let handlers = {};
-
-    handlers[contracts.ActivateTab] = async function (request, port) {
-        if (await addon.activateTab(request.payload)) {
-            port.postMessage({event: contracts.ActivateTabCompleted});
-            return;
-        }
-        port.postMessage({event: contracts.ActivateTabFailed});
-    };
-
-    handlers[contracts.CollectTabs] = async function (request, port) {
-        let tabs = await addon.collectTabs();
-        port.postMessage({event: contracts.CollectTabsCompleted, payload: tabs});
-    };
-
-    function connected(p) {
-        if (p.name === contracts.Port)
-            p.onMessage.addListener(function (m) {
-                let handler = handlers[m.command];
-                if (handler) {
-                    handler(m, p);
-                }
-            });
+async function activateTab(tabToActivate) {
+    const pseudoAction = pseudoTabActions[tabToActivate.id];
+    if (pseudoAction) {
+        await pseudoAction();
+        return true;
     }
+    try {
+        await browser.tabs.update(tabToActivate.id, { active: true });
+        return true;
+    } catch {
+        return false;
+    }
+}
 
-    browser.runtime.onConnect.addListener(connected);
-})(root);
+browser.runtime.onConnect.addListener((port) => {
+    if (port.name !== contracts.Port) return;
+
+    port.onMessage.addListener(async (m) => {
+        if (m.command === contracts.CollectTabs) {
+            const tabs = await collectTabs();
+            port.postMessage({ event: contracts.CollectTabsCompleted, payload: tabs });
+        } else if (m.command === contracts.ActivateTab) {
+            const success = await activateTab(m.payload);
+            port.postMessage({ event: success ? contracts.ActivateTabCompleted : contracts.ActivateTabFailed });
+        }
+    });
+});

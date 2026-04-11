@@ -1,0 +1,18 @@
+{
+  "name": "tabatus",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "build:firefox": "node build.js firefox",
+    "build:chrome": "node build.js chrome",
+    "lint": "eslint ./src/*.js",
+    "promos": "node generate-promos.js"
+  },
+  "devDependencies": {
+    "archiver": "^7.0.1",
+    "eslint": "^9.0.0",
+    "globals": "^17.4.0",
+    "puppeteer": "^24.0.0"
+  }
+}

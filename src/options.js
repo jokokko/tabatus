@@ -1,29 +1,23 @@
 'use strict';
 
-(function () {
-    let app = angular.module("tabsapp", ["mgcrea.ngStrap"]);
+(async () => {
+    const settings = await browser.storage.sync.get(contracts.OptionDisableFuzzyMatching);
 
-    app.controller("settingsctrl", ["$scope", SettingsCtrl]);
-
-    function SettingsCtrl($scope) {
-        let ctx = this;
-        ctx.settings = {};
-        ctx.categories = categories;
-        ctx.save = ctx.save.bind(this);
+    const checkbox = document.getElementById(contracts.OptionDisableFuzzyMatching);
+    if (checkbox) {
+        checkbox.checked = !!(settings && settings[contracts.OptionDisableFuzzyMatching]);
+        checkbox.addEventListener('change', () => {
+            browser.storage.sync.set({ [contracts.OptionDisableFuzzyMatching]: checkbox.checked });
+        });
     }
 
-    SettingsCtrl.prototype.save = function () {
-        let ctx = this;
-        browser.storage.sync.set(ctx.settings);
-    };
+    const label = document.querySelector(`label[for="${contracts.OptionDisableFuzzyMatching}"]`);
+    if (label) {
+        label.textContent = browser.i18n.getMessage('option_disable_fuzzy_matching');
+    }
 
-    const categories = [
-        {
-            'label': browser.i18n.getMessage('general'),
-            'options': [{
-                'key': contracts.OptionDisableFuzzyMatching,
-                'label': browser.i18n.getMessage('option_disable_fuzzy_matching'),
-            }]
-        }];
-
-})(window);
+    const heading = document.getElementById('category-general');
+    if (heading) {
+        heading.textContent = browser.i18n.getMessage('general');
+    }
+})();

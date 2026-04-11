@@ -1,41 +1,18 @@
-<html ng-app="tabsapp">
-
+<!DOCTYPE html>
+<html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <link rel="stylesheet" href="external/bootstrap.min.css" type="text/css"/>
-    <link rel="stylesheet" href="app.css" type="text/css"/>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="app.css"/>
 </head>
-
-<body class="ng-cloak">
-
-<div class="ctrlcontainer">
-
-    <div ng-controller="tabsctrl as ctrl">
-
-            <div class="form-group" id="typeaheadcontainer">
-                <label class="lb-sm" tabindex="-1">Activate Tab</label>
-                <input id="searchinput" class="form-control input-sm"
-                       ng-model="ctrl.selectedTab"
-                       bs-options="tab.title for tab in ctrl.tabs | byTitleAndUrl: $viewValue"
-                       placeholder="Filter tabs by title or url" bs-typeahead type="text"
-                       data-container="#typeaheadcontainer"
-                       data-placement="bottom"
-                       data-template-url="typeaheadtemplate.html"
-                       bs-on-select="ctrl.activateTab" data-auto-select="true" tabindex="1" autofocus>
-            </div>
-    </div>
-
+<body>
+<div class="container">
+    <label class="lb-sm" for="searchinput">Activate Tab</label>
+    <input id="searchinput" type="text" placeholder="Filter tabs by title or url" autofocus tabindex="1"/>
+    <ul id="tablist"></ul>
 </div>
-
-<script src="external/jquery-3.2.1.min.js" type="text/javascript"></script>
-<script src="external/fuse.min.js" type="text/javascript"></script>
-<script src="external/bootstrap.min.js" type="text/javascript"></script>
-<script src="external/angular.min.js" type="text/javascript"></script>
-<script src="external/angular-strap.min.js" type="text/javascript"></script>
-<script src="external/angular-strap.tpl.min.js" type="text/javascript"></script>
-<script src="contracts.js" type="text/javascript"></script>
-<script src="app.js" type="text/javascript"></script>
-
+<script src="external/fuse.min.js"></script>
+<script src="compat.js"></script>
+<script src="contracts.js"></script>
+<script src="app.js"></script>
 </body>
-
 </html>
