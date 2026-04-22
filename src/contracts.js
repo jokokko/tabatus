@@ -5,5 +5,7 @@ const contracts = {
     ActivateTab: 'ActivateTab',
     ActivateTabCompleted: 'ActivateTabCompleted',
     ActivateTabFailed: 'ActivateTabFailed',
+    NavigateTab: 'NavigateTab',
+    NavigateTabCompleted: 'NavigateTabCompleted',
     OptionDisableFuzzyMatching: 'optionDisableFuzzyMatching',
 };

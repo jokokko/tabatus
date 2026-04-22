@@ -203,6 +203,21 @@
     .tab-title { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tab-url   { display: block; font-size: 11px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .tab-item.active .tab-url { color: #555; }
+
+    /* ── Breadcrumbs ─────────────────────────────────────────────────────────── */
+    .crumbs {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      padding: 5px 8px 6px; margin: 0; list-style: none;
+      border-top: 1px solid #e8e8e8;
+    }
+    .crumbs li { padding: 0; }
+    .crumb {
+      display: inline-block; border-radius: 4px;
+      font-size: 10.5px; font-weight: 500; padding: 2px 7px;
+      cursor: pointer;
+    }
+    .crumb-host   { background: #1e3d72; color: #b8d4f8; }
+    .crumb-path   { background: #0d3d32; color: #5de8c0; }
   </style>
 </head>
 <body>
@@ -254,7 +269,7 @@
       <div class="file-tree">
         <div class="file-tree-header">
           <span class="commit-author">jokokko</span>
-          <span class="commit-msg">Migrate to Manifest V3, replace AngularJS with native JS</span>
+          <span class="commit-msg">Breadcrumbus integration — navigate from search via URL breadcrumbs</span>
           <span class="commit-date">2 hours ago</span>
         </div>
         <div class="file-row">
@@ -300,7 +315,7 @@
       </div>
       <div class="sidebar-section">
         <div class="sidebar-title">Releases</div>
-        <div class="sidebar-stat">🏷 v2.0.0 · Latest</div>
+        <div class="sidebar-stat">🏷 v2.1.0 · Latest</div>
       </div>
     </div>
   </div>
@@ -329,6 +344,11 @@
           <span class="tab-url">about:blank</span>
         </div>
       </div>
+      <ul class="crumbs">
+        <li><span class="crumb crumb-host">github.com</span></li>
+        <li><span class="crumb crumb-path">/jokokko/</span></li>
+        <li><span class="crumb crumb-path">tabatus</span></li>
+      </ul>
     </div>
   </div>
 

@@ -19,6 +19,7 @@
 
     const input = document.getElementById('searchinput');
     const list = document.getElementById('tablist');
+    const crumbContainer = document.getElementById('crumb-container');
 
     try {
         port = browser.runtime.connect({ name: contracts.Port });
@@ -44,6 +45,19 @@
         return new Fuse(allTabs, fuseOptions).search(query);
     }
 
+    function updateCrumbs() {
+        const tab = activeIndex >= 0 ? filteredTabs[activeIndex] : null;
+        if (tab) {
+            breadcrumbs.render(crumbContainer, tab, navigateViaUrl);
+        } else {
+            crumbContainer.innerHTML = '';
+        }
+    }
+
+    function navigateViaUrl(tab, url, newTab) {
+        port?.postMessage({ command: contracts.NavigateTab, payload: { tabId: tab.id, url, newTab } });
+    }
+
     function renderList(tabs) {
         list.innerHTML = '';
         filteredTabs = tabs;
@@ -66,6 +80,8 @@
             li.addEventListener('click', () => activateTab(tab));
             list.appendChild(li);
         });
+
+        updateCrumbs();
     }
 
     function setActive(index) {
@@ -78,6 +94,7 @@
             items[activeIndex].classList.add('active');
             items[activeIndex].scrollIntoView({ block: 'nearest' });
         }
+        updateCrumbs();
     }
 
     function activateTab(tab) {
@@ -88,7 +105,7 @@
         if (e.event === contracts.CollectTabsCompleted) {
             allTabs = e.payload;
             renderList(allTabs);
-        } else if (e.event === contracts.ActivateTabCompleted) {
+        } else if (e.event === contracts.ActivateTabCompleted || e.event === contracts.NavigateTabCompleted) {
             window.close();
         }
     }

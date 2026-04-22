@@ -9,6 +9,8 @@ const contracts = {
     ActivateTab: 'ActivateTab',
     ActivateTabCompleted: 'ActivateTabCompleted',
     ActivateTabFailed: 'ActivateTabFailed',
+    NavigateTab: 'NavigateTab',
+    NavigateTabCompleted: 'NavigateTabCompleted',
     OptionDisableFuzzyMatching: 'optionDisableFuzzyMatching',
 };
 
@@ -52,6 +54,16 @@ browser.runtime.onConnect.addListener((port) => {
         } else if (m.command === contracts.ActivateTab) {
             const success = await activateTab(m.payload);
             port.postMessage({ event: success ? contracts.ActivateTabCompleted : contracts.ActivateTabFailed });
+        } else if (m.command === contracts.NavigateTab) {
+            const { tabId, url, newTab } = m.payload;
+            try {
+                if (newTab) {
+                    await browser.tabs.create({ active: true, url });
+                } else {
+                    await browser.tabs.update(tabId, { active: true, url });
+                }
+            } catch { /* tab may have been closed */ }
+            port.postMessage({ event: contracts.NavigateTabCompleted });
         }
     });
 });
