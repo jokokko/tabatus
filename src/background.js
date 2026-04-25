@@ -27,7 +27,7 @@ const pseudoTabActions = {
 
 async function collectTabs() {
     const items = await browser.tabs.query({});
-    return items.map(item => ({ id: item.id, title: item.title, url: item.url })).concat(pseudoTabs);
+    return items.map(item => ({ id: item.id, title: item.title, url: item.url, favIconUrl: item.favIconUrl })).concat(pseudoTabs);
 }
 
 async function activateTab(tabToActivate) {

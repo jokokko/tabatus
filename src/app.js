@@ -67,6 +67,17 @@
             const li = document.createElement('li');
             if (i === 0) li.classList.add('active');
 
+            if (tab.favIconUrl) {
+                const favicon = document.createElement('img');
+                favicon.className = 'tab-favicon';
+                favicon.src = tab.favIconUrl;
+                favicon.addEventListener('error', () => { favicon.style.display = 'none'; });
+                li.appendChild(favicon);
+            }
+
+            const text = document.createElement('div');
+            text.className = 'tab-text';
+
             const title = document.createElement('span');
             title.className = 'tab-title';
             title.textContent = tab.title;
@@ -75,8 +86,9 @@
             url.className = 'tab-url';
             url.textContent = tab.url;
 
-            li.appendChild(title);
-            li.appendChild(url);
+            text.appendChild(title);
+            text.appendChild(url);
+            li.appendChild(text);
             li.addEventListener('click', () => activateTab(tab));
             list.appendChild(li);
         });
